@@ -16,16 +16,14 @@ from PIL import Image
 from keras.layers import LSTM, MaxPooling2D
 import face_alignment
 import multipie_gen
+
 import math
 from numba import jit, vectorize, prange
 import multiprocessing
 import time
 
-
 tf.logging.set_verbosity(tf.logging.WARN) # record warnning message
-
 fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=False)
-
 EYE_H, EYE_W, NOSE_H, NOSE_W , MOUTH_H, MOUTH_W= 40, 40, 32, 40, 32, 48
 
 class TPGAN():
@@ -85,7 +83,6 @@ class TPGAN():
         """ 
         getter of singleton generator
         """
-        
         if self._generator is None:
             self._generator = self.build_generator(base_filters=self.base_filters)
             #self._generator = load_model(self.generator_weights,custom_objects= {'CloudableModel':CloudableModel,'tf':tf,'multipie_gen':multipie_gen})
@@ -96,7 +93,6 @@ class TPGAN():
         """ 
         getter of singleton classifier
         """
-        
         if self._classifier is None:
             self._classifier = self.build_classifier()
             #self._classifier = load_model(self.classifier_weights,custom_objects= {'CloudableModel':CloudableModel,'tf':tf,'multipie_gen':multipie_gen})
@@ -106,7 +102,6 @@ class TPGAN():
         """ 
         getter of singleton part rotator for each part; left eye, right eye, nose, and mouth.
         """
-        
         if self._parts_rotator is None:
             self._parts_rotator = self.build_parts_rotator(base_filters=self.base_filters)
                         
@@ -116,7 +111,6 @@ class TPGAN():
         """
         private func to add activation layer
         """
-
         if func is None:
             return X
         elif func == 'relu':
@@ -125,12 +119,10 @@ class TPGAN():
             return LeakyReLU()(X)
         else:
             raise Exception('Undefined function for activation: ' + func)
-
     def _res_block(self, X, kernel_size, batch_norm=False, activation=None, name=None):
         """
         private func to add residual block
-        """
-        
+        """      
         X_shortcut = X
         
         if batch_norm:
@@ -149,7 +141,6 @@ class TPGAN():
         self._add_activation(X, activation)
             
         X = Add()([X_shortcut, X])
-        
         return X
     
     def build_generator(self, name="generator", base_filters=64): 
@@ -271,8 +262,7 @@ class TPGAN():
         d128r = self._res_block(Concatenate()([c128r, mc_in_img128, f128]), (5, 5), batch_norm=True, activation='lrelu', name=name+'_d128_r')
 
         interpolated128 = Lambda(lambda x: tf.image.resize_bilinear(x, [128, 128]))(img16) # Use Lambda layer to wrap tensorflow func, resize_bilinear
-        
-        
+       
         in_leye = Input(shape=(multipie_gen.EYE_H, multipie_gen.EYE_W, 3))
         in_reye = Input(shape=(multipie_gen.EYE_H, multipie_gen.EYE_W, 3))
         in_nose = Input(shape=(multipie_gen.NOSE_H, multipie_gen.NOSE_W, 3))
@@ -489,7 +479,6 @@ class TPGAN():
         self.decision = nn.Sequential(OrderedDict([
                         ('sigmoid', nn.Sigmoid()),
                         ]))
-    
     
         class Forest(nn.Module):
             def __init__(self,n_tree,tree_depth,n_in_feature,tree_feature_rate,n_class,jointly_training):
@@ -722,7 +711,6 @@ class TPGAN():
         history = self.generator_train_model.fit_generator(train_gen, steps_per_epoch=steps_per_epoch, epochs=epochs+self.gen_current_epochs,
                                             callbacks=callbacks, workers=0, validation_data=valid_gen, validation_steps=1,
                                             shuffle=False, initial_epoch=self.gen_current_epochs)
-        
         self.gen_current_epochs += epochs
 
         return history
@@ -755,10 +743,8 @@ class TPGAN():
         history = self.discriminator_train_model.fit_generator(train_gen, steps_per_epoch=steps_per_epoch,
                                     epochs=epochs+self.disc_current_epochs, callbacks=callbacks,
                                     workers=0, validation_data=valid_gen, validation_steps=50,
-                                    shuffle=False, initial_epoch=self.disc_current_epochs)
-        
+                                    shuffle=False, initial_epoch=self.disc_current_epochs)        
         self.disc_current_epochs += epochs
-
         return history
     
     def generate(self, inputs):
@@ -782,8 +768,7 @@ class TPGAN():
         front_nose_img = np.array(255*(front_nose_img_)**0.5, dtype = 'uint8')
         front_mouth_img_ = (front_mouth_img*np.iinfo(np.uint8).max).astype(np.uint8)
         front_mouth_img = np.array(255*(front_mouth_img_)**0.5, dtype = 'uint8')
-
-        
+       
         return img128, front_leye_img, front_reye_img, front_nose_img, front_mouth_img
     
     def rotate_parts(self, inputs):
@@ -821,7 +806,6 @@ class TPGAN():
         out_img = np.array(255*(out_img)**0.5, dtype = 'uint8')
         return out_img
     
-
 class LightCNN():
     
     class SaveWeightsCallback(Callback):
