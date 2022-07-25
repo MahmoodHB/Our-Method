@@ -38,7 +38,7 @@ if __name__ == '__main__':
                   epochs=300, out_dir='path to output files', out_period=1, is_output_img=True,
                   lr=0.0001, decay=0, lambda_128=1, lambda_Consistency128=0.011, lambda_ip=1e-3, lambda_adv=5e-3, lambda_tv=1e-5, lambda_content=0.05, lambda_parts=3)
 				  
-	num_trees = 16 #(the number of trees)
+    num_trees = 16 #(the number of trees)
     depth = 9 #("5 - 9" each tree uses randomly selected 50% of the input features)
     used_features_rate = 0.5  #("0.1 - 0.5" control the number of features)
     hidden_units = [64, 64]	#(indicating the number of hidden units in each layer)
