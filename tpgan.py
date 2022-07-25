@@ -673,11 +673,11 @@ class TPGAN():
             """
             return lambda_tv * K.mean(tf.image.total_variation(y_pred))
                 
-		def _loss_df(y_true, y_pred):
+	def _loss_df(y_true, y_pred):
             """
             decision forest df loss from img128
             """
-			return lambda_df = tf.reduce_mean(-tf.mul(tf.log(py_x), y_pred))
+	    return lambda_df * K.mean(losses.binary_crossentropy(y_true, y_pred))
 			
         def contenet(y_true, y_pred): 
             """
