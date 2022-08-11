@@ -299,7 +299,7 @@ class TPGAN():
         name = name[0]
         
         in_feat = Input(shape=(256,))
-        X = Dropout(0.7)(in_feat)
+        X = Dropout(0.9)(in_feat)
         clas = Dense(multipie_gen.NUM_SUBJECTS, activation='softmax', kernel_initializer=RandomNormal(stddev=0.02), kernel_regularizer=regularizers.l2(0.005),
                      use_bias=False, name=name+'_dense')(X)
         
