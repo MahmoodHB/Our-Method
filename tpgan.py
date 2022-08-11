@@ -129,14 +129,14 @@ class TPGAN():
             X = Conv2D(X.shape[-1].value, kernel_size=kernel_size, strides=(1, 1), padding='same', name=name+'_c1_0', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(X)
             X = BatchNormalization(epsilon=1e-5, name=name+'_c1_0_bn')(X)
         else:
-            X = Conv2D(X.shape[-1].value, kernel_size=kernel_size, strides=(1, 1), padding='same', name=name+'_c1_1', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(X)
+            X = Conv2D(X.shape[-1].value, kernel_size=kernel_size, strides=(1, 1), padding='same', name=name+'_c1_1', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(X)
         self._add_activation(X, activation)
         
         if batch_norm:
             X = Conv2D(X.shape[-1].value, kernel_size=kernel_size, strides=(1, 1), padding='same', use_bias=False, name=name+'_c2_0', kernel_initializer=TruncatedNormal(stddev=0.02))(X)
             X = BatchNormalization(epsilon=1e-5, name=name+'_c2_0_bn')(X)
         else:
-            X = Conv2D(X.shape[-1].value, kernel_size=kernel_size, strides=(1, 1), padding='same', name=name+'_c2_1', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(X)
+            X = Conv2D(X.shape[-1].value, kernel_size=kernel_size, strides=(1, 1), padding='same', name=name+'_c2_1', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(X)
 
         self._add_activation(X, activation)
             
@@ -211,7 +211,7 @@ class TPGAN():
         in_img = Input(shape=(multipie_gen.IMG_H, multipie_gen.IMG_W, 3))
         mc_in_img128 = in_img
 
-        c128 = Conv2D(base_filters, (7, 7), padding='same', strides=(1, 1), name=name+'_c128', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(mc_in_img128)
+        c128 = Conv2D(base_filters, (7, 7), padding='same', strides=(1, 1), name=name+'_c128', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(mc_in_img128)
         c128 = self._add_activation(c128, 'lrelu')
         c128r = self._res_block(c128, (7, 7), batch_norm=True, activation='lrelu', name=name+'_c128_r')
         
@@ -238,7 +238,7 @@ class TPGAN():
         fc3 = Dense(8*8*base_filters, name=name+'_fc3', kernel_initializer=RandomNormal(stddev=0.02), bias_initializer=Constant(0.1))(fc2_with_noise)
         
         f8 = Conv2DTranspose(base_filters, (3, 3), padding='valid', strides=(32, 32), name=name+'_f8', activation='relu', kernel_initializer=RandomNormal(stddev=0.02), bias_initializer=Zeros())(Reshape((1, 1, fc3.shape[-1].value))(fc3))
-        f128 = Conv2DTranspose(base_filters//8, (3, 3), padding='same', strides=(4, 4), name=name+'_f128', activation='relu', kernel_initializer=RandomNormal(stddev=0.02), bias_initializer=Zeros())(f8)
+        f128 = Conv2DTranspose(base_filters//8, (3, 3), padding='same', strides=(4, 4), name=name+'_f128', activation='relu', kernel_initializer=RandomNormal(stddev=0.02), bias_initializer=(0.03))(f8)
            
         # size8
         d8 = Concatenate(name=name+'_d8')([c8r4, f8])
@@ -253,7 +253,7 @@ class TPGAN():
         d16r = self._res_block(c16r, (3, 3), batch_norm=True, activation='lrelu', name=name+'_d16_r')
         d16r2 = self._res_block(Concatenate()([d16, d16r]), (3, 3), batch_norm=True, activation='lrelu', name=name+'_d16_r2')
         d16r3 = self._res_block(d16r2, (3, 3), batch_norm=True, activation='lrelu', name=name+'_d16_r3')
-        img16 = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_img16', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(d16r3)
+        img16 = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_img16', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(d16r3)
                 
         # size128
         d128 = Conv2DTranspose(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_d128', use_bias=False, kernel_initializer=RandomNormal(stddev=0.02))(d16r3)
@@ -271,7 +271,7 @@ class TPGAN():
         front_leye_img, front_leye_feat, front_reye_img, front_reye_feat, front_nose_img, front_nose_feat, front_mouth_img, front_mouth_feat\
         = self.parts_rotator()([in_leye, in_reye, in_nose, in_mouth])
         
-        d128r_img =  Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_d128r_img', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(d128r)
+        d128r_img =  Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_d128r_img', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(d128r)
         
         combined_parts_img = combine_parts([128, 128], front_leye_img, front_reye_img, front_nose_img, front_mouth_img, d128r_img)
         combined_parts_feat = combine_parts([128, 128], front_leye_feat, front_reye_feat, front_nose_feat, front_mouth_feat,d128r_img)
@@ -284,7 +284,7 @@ class TPGAN():
         d128r3c2 = Conv2D(base_filters//2, (3, 3), padding='same', strides=(1, 1), name=name+'_d128_r3c2', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(d128r3c)
         d128r3c2 = BatchNormalization(epsilon=1e-5, name=name+'_d128_r3c2_bn')(d128r3c2)
         d128r3c2 = self._add_activation(d128r3c2, 'lrelu')
-        img128 = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_img128', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(d128r3c2)
+        img128 = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_img128', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(d128r3c2)
         ret_model = CloudableModel(inputs=[in_img, in_leye, in_reye, in_nose, in_mouth, in_noise], outputs=[img128, fc2, front_leye_img, front_reye_img, front_nose_img, front_mouth_img], name=full_name)          
       
         return ret_model
@@ -377,7 +377,7 @@ class TPGAN():
         
         in_img = Input(shape=(in_h, in_w, 3))
         
-        c0 = Conv2D(base_filters, (3, 3), padding='same', strides=(1, 1), name=name+'_c0', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(in_img)
+        c0 = Conv2D(base_filters, (3, 3), padding='same', strides=(1, 1), name=name+'_c0', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(in_img)
         c0r = self._res_block(c0, (3, 3), batch_norm=True, activation='lrelu', name=name+'_c0_r')
         c1 = Conv2D(base_filters*2, (3, 3), padding='same', strides=(2, 2), name=name+'_c1', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(c0r)
         c1 = BatchNormalization(name=name+'_c1_bn')(c1)
@@ -421,7 +421,7 @@ class TPGAN():
         after_select_d3 = self._add_activation(after_select_d3, 'lrelu')
         part_feat = self._res_block(after_select_d3, (3, 3), batch_norm=True, activation='lrelu', name=name+'_d3_r')
         
-        part_img = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_c4', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(part_feat)
+        part_img = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_c4', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(part_feat)
 
         ret_model = CloudableModel(inputs=[in_img], outputs=[part_img, part_feat], name= name + '_rotator')
         
@@ -438,10 +438,10 @@ class TPGAN():
         
         in_img = Input(shape=(multipie_gen.IMG_H, multipie_gen.IMG_W, 3))
         
-		c128 = Conv2D(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_c128', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(in_img)
+		c128 = Conv2D(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_c128', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(in_img)
         c128 = self._add_activation(c128, 'lrelu')
 		
-		c64 = Conv2D(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_c64', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=Zeros())(in_img)
+		c64 = Conv2D(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_c64', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(in_img)
         c64 = self._add_activation(c64, 'lrelu')
         
         c32 = Conv2D(base_filters*2, (3, 3), padding='same', strides=(2, 2), name=name+'_c32', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.02))(c64)
