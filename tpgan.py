@@ -271,7 +271,7 @@ class TPGAN():
         front_leye_img, front_leye_feat, front_reye_img, front_reye_feat, front_nose_img, front_nose_feat, front_mouth_img, front_mouth_feat\
         = self.parts_rotator()([in_leye, in_reye, in_nose, in_mouth])
         
-        d128r_img =  Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_d128r_img', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(d128r)
+        d128r_img =  Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_d128r_img', kernel_initializer=TruncatedNormal(stddev=0.04), bias_initializer=(0.04))(d128r)  #range  4 to 7
         
         combined_parts_img = combine_parts([128, 128], front_leye_img, front_reye_img, front_nose_img, front_mouth_img, d128r_img)
         combined_parts_feat = combine_parts([128, 128], front_leye_feat, front_reye_feat, front_nose_feat, front_mouth_feat,d128r_img)
@@ -281,10 +281,10 @@ class TPGAN():
         d128r2c = BatchNormalization(epsilon=1e-5, name=name+'_d128_r2c_bn')(d128r2c)
         d128r2c = self._add_activation(d128r2c, 'lrelu')
         d128r3c = self._res_block(d128r2c, (3, 3), batch_norm=True, activation='lrelu', name=name+'_d128_r3c')
-        d128r3c2 = Conv2D(base_filters//2, (3, 3), padding='same', strides=(1, 1), name=name+'_d128_r3c2', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(d128r3c)
+        d128r3c2 = Conv2D(base_filters//2, (3, 3), padding='same', strides=(1, 1), name=name+'_d128_r3c2', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.04))(d128r3c) #range  4 to 7
         d128r3c2 = BatchNormalization(epsilon=1e-5, name=name+'_d128_r3c2_bn')(d128r3c2)
         d128r3c2 = self._add_activation(d128r3c2, 'lrelu')
-        img128 = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_img128', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(d128r3c2)
+        img128 = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_img128', kernel_initializer=TruncatedNormal(stddev=0.04), bias_initializer=(0.04))(d128r3c2) #range  4 to 7
         ret_model = CloudableModel(inputs=[in_img, in_leye, in_reye, in_nose, in_mouth, in_noise], outputs=[img128, fc2, front_leye_img, front_reye_img, front_nose_img, front_mouth_img], name=full_name)          
       
         return ret_model
@@ -299,8 +299,8 @@ class TPGAN():
         name = name[0]
         
         in_feat = Input(shape=(256,))
-        X = Dropout(0.9)(in_feat)
-        clas = Dense(multipie_gen.NUM_SUBJECTS, activation='softmax', kernel_initializer=RandomNormal(stddev=0.02), kernel_regularizer=regularizers.l2(0.005),
+        X = Dropout(0.5)(in_feat)  #range 3 to 5
+        clas = Dense(multipie_gen.NUM_SUBJECTS, activation='softmax', kernel_initializer=RandomNormal(stddev=0.02), kernel_regularizer=regularizers.l2(0.004), #range  4 to 7
                      use_bias=False, name=name+'_dense')(X)
         
         ret_classifier = CloudableModel(inputs=in_feat, outputs=clas, name=full_name)
@@ -377,51 +377,51 @@ class TPGAN():
         
         in_img = Input(shape=(in_h, in_w, 3))
         
-        c0 = Conv2D(base_filters, (3, 3), padding='same', strides=(1, 1), name=name+'_c0', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(in_img)
+        c0 = Conv2D(base_filters, (3, 3), padding='same', strides=(1, 1), name=name+'_c0', kernel_initializer=TruncatedNormal(stddev=0.04), bias_initializer=(0.04))(in_img) #range  4 to 7
         c0r = self._res_block(c0, (3, 3), batch_norm=True, activation='lrelu', name=name+'_c0_r')
-        c1 = Conv2D(base_filters*2, (3, 3), padding='same', strides=(2, 2), name=name+'_c1', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(c0r)
+        c1 = Conv2D(base_filters*2, (3, 3), padding='same', strides=(2, 2), name=name+'_c1', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.04))(c0r) #range  4 to 7
         c1 = BatchNormalization(name=name+'_c1_bn')(c1)
         c1 = self._add_activation(c1, 'lrelu')
         
         c1r = self._res_block(c1, (3, 3), batch_norm=True, activation='lrelu', name=name+'_c1_r')
-        c2 = Conv2D(base_filters*4, (3, 3), padding='same', strides=(2, 2), name=name+'_c2', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(c1r)
+        c2 = Conv2D(base_filters*4, (3, 3), padding='same', strides=(2, 2), name=name+'_c2', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.04))(c1r) #range  4 to 7
         c2 = BatchNormalization(name=name+'_c2_bn')(c2)
         c2 = self._add_activation(c2, 'lrelu')
         
         c2r = self._res_block(c2, (3, 3), batch_norm=True, activation='lrelu', name=name+'_c2_r')
-        c3 = Conv2D(base_filters*8, (3, 3), padding='same', strides=(2, 2), name=name+'_c3', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(c2r)
+        c3 = Conv2D(base_filters*8, (3, 3), padding='same', strides=(2, 2), name=name+'_c3', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.04))(c2r) #range  4 to 7
         c3 = BatchNormalization(name=name+'_c3_bn')(c3)
         c3 = self._add_activation(c3, 'lrelu')
         
         c3r = self._res_block(c3, (3, 3), batch_norm=True, activation='lrelu', name=name+'_c3_r')
         c3r2 = self._res_block(c3r, (3, 3), batch_norm=True, activation='lrelu', name=name+'_c3_r2')
         
-        d1 = Conv2DTranspose(base_filters*4, (3, 3), padding='same', strides=(2, 2), name=name+'_d1', use_bias=True, kernel_initializer=RandomNormal(stddev=0.02))(c3r2)
+        d1 = Conv2DTranspose(base_filters*4, (3, 3), padding='same', strides=(2, 2), name=name+'_d1', use_bias=True, kernel_initializer=RandomNormal(stddev=0.04))(c3r2) #range  4 to 7
         d1 = BatchNormalization(name=name+'_d1_bn')(d1)
         d1 = self._add_activation(d1, 'lrelu')
         
-        after_select_d1 = Conv2D(base_filters*4, (3, 3), padding='same', strides=(1, 1), name=name+'_asd1', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(Concatenate()([d1, c2r]))
+        after_select_d1 = Conv2D(base_filters*4, (3, 3), padding='same', strides=(1, 1), name=name+'_asd1', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.04))(Concatenate()([d1, c2r])) #range  4 to 7
         after_select_d1 = BatchNormalization(name=name+'_asd1_bn')(after_select_d1)
         after_select_d1 = self._add_activation(after_select_d1, 'lrelu')
         d1r = self._res_block(after_select_d1, (3, 3), batch_norm=True, activation='lrelu', name=name+'_d1_r')
-        d2 = Conv2DTranspose(base_filters*2, (3, 3), padding='same', strides=(2, 2), name=name+'_d2', use_bias=False, kernel_initializer=RandomNormal(stddev=0.02))(d1r)
+        d2 = Conv2DTranspose(base_filters*2, (3, 3), padding='same', strides=(2, 2), name=name+'_d2', use_bias=False, kernel_initializer=RandomNormal(stddev=0.04))(d1r) #range  4 to 7
         d2 = BatchNormalization(name=name+'_d2_bn')(d2)
         d2 = self._add_activation(d2, 'lrelu')
         
-        after_select_d2 = Conv2D(base_filters*2, (3, 3), padding='same', strides=(1, 1), name=name+'_asd2', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(Concatenate()([d2, c1r]))
+        after_select_d2 = Conv2D(base_filters*2, (3, 3), padding='same', strides=(1, 1), name=name+'_asd2', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.04))(Concatenate()([d2, c1r])) #range  4 to 7
         after_select_d2 = BatchNormalization(name=name+'_asd2_bn')(after_select_d2)
         after_select_d2 = self._add_activation(after_select_d2, 'lrelu')
         d2r = self._res_block(after_select_d2, (3, 3), batch_norm=True, activation='lrelu', name=name+'_d2_r')
-        d3 = Conv2DTranspose(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_d3', use_bias=False, kernel_initializer=RandomNormal(stddev=0.02))(d2r)
+        d3 = Conv2DTranspose(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_d3', use_bias=False, kernel_initializer=RandomNormal(stddev=0.04))(d2r) #range  4 to 7
         d3 = BatchNormalization(name=name+'_d3_bn')(d3)
         d3 = self._add_activation(d3, 'lrelu')
         
-        after_select_d3 = Conv2D(base_filters, (3, 3), padding='same', strides=(1, 1), name=name+'_asd3', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.02))(Concatenate()([d3, c0r]))
+        after_select_d3 = Conv2D(base_filters, (3, 3), padding='same', strides=(1, 1), name=name+'_asd3', use_bias=False, kernel_initializer=TruncatedNormal(stddev=0.04))(Concatenate()([d3, c0r])) #range  4 to 7
         after_select_d3 = BatchNormalization(name=name+'_asd3_bn')(after_select_d3)
         after_select_d3 = self._add_activation(after_select_d3, 'lrelu')
         part_feat = self._res_block(after_select_d3, (3, 3), batch_norm=True, activation='lrelu', name=name+'_d3_r')
         
-        part_img = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_c4', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(part_feat)
+        part_img = Conv2D(3, (3, 3), padding='same', strides=(1, 1), activation='tanh', name=name+'_c4', kernel_initializer=TruncatedNormal(stddev=0.04), bias_initializer=(0.04))(part_feat) #range  4 to 7
 
         ret_model = CloudableModel(inputs=[in_img], outputs=[part_img, part_feat], name= name + '_rotator')
         
@@ -438,26 +438,26 @@ class TPGAN():
         
         in_img = Input(shape=(multipie_gen.IMG_H, multipie_gen.IMG_W, 3))
         
-		c128 = Conv2D(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_c128', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(in_img)
+		c128 = Conv2D(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_c128', kernel_initializer=TruncatedNormal(stddev=0.04), bias_initializer=(0.04))(in_img) #range  4 to 7
         c128 = self._add_activation(c128, 'lrelu')
 		
-		c64 = Conv2D(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_c64', kernel_initializer=TruncatedNormal(stddev=0.02), bias_initializer=(0.03))(in_img)
+		c64 = Conv2D(base_filters, (3, 3), padding='same', strides=(2, 2), name=name+'_c64', kernel_initializer=TruncatedNormal(stddev=0.04), bias_initializer=(0.04))(in_img) #range  4 to 7
         c64 = self._add_activation(c64, 'lrelu')
         
-        c32 = Conv2D(base_filters*2, (3, 3), padding='same', strides=(2, 2), name=name+'_c32', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.02))(c64)
+        c32 = Conv2D(base_filters*2, (3, 3), padding='same', strides=(2, 2), name=name+'_c32', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.04))(c64) #range  4 to 7
         c32 = BatchNormalization(center=True, scale=True, name=name+'_c32_bn')(c32)
         c32 = self._add_activation(c32, 'lrelu')
 		
-        c16 = Conv2D(base_filters*4, (3, 3), padding='same', strides=(2, 2), name=name+'_c16', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.02))(in_img)
+        c16 = Conv2D(base_filters*4, (3, 3), padding='same', strides=(2, 2), name=name+'_c16', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.04))(in_img) #range  4 to 7
         c16 = BatchNormalization(center=True, scale=True, name=name+'_c16_bn')(c16)
         c16 = self._add_activation(c16, 'lrelu')
         
-        c8 = Conv2D(base_filters*8, (3, 3), padding='same', strides=(2, 2), name=name+'_c8', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.02))(c16)
+        c8 = Conv2D(base_filters*8, (3, 3), padding='same', strides=(2, 2), name=name+'_c8', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.04))(c16) #range  4 to 7
         c8 = BatchNormalization(center=True, scale=True, name=name+'_c8_bn')(c8)
         c8 = self._add_activation(c8, 'lrelu')
         c8r = self._res_block(c8, (3, 3), batch_norm=False, activation='lrelu', name=name+'_c8_r')
         
-        c4 = Conv2D(base_filters*8, (3, 3), padding='same', strides=(2, 2), name=name+'_c4', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.02))(c8r)
+        c4 = Conv2D(base_filters*8, (3, 3), padding='same', strides=(2, 2), name=name+'_c4', use_bias=True, kernel_initializer=TruncatedNormal(stddev=0.04))(c8r) #range  4 to 7
         c4 = BatchNormalization(center=True, scale=True, name=name+'_c4_bn')(c4)
         c4 = self._add_activation(c4, 'lrelu')
         c4r = self._res_block(c4, (3, 3), batch_norm=False, activation='lrelu', name=name+'_c4_r')
@@ -983,10 +983,10 @@ class LightCNN():
     def build_classifier(self, name):
         
         in_feat = Input(shape=(256,))
-        X = Dropout(0.7)(in_feat)
+        X = Dropout(0.5)(in_feat) #range 3 to 5
                
         X = Dense(500, activation='relu', name = name + '_dense1', kernel_regularizer=regularizers.l2(0.005))(X)
-        X = Dropout(0.7)(X)
+        X = Dropout(0.5)(X) #range 3 to 5
     
         clas = Dense(self.num_classes, activation='softmax', name = name + '_dense2', use_bias=False , kernel_regularizer=regularizers.l2(0.005))(X)
         
@@ -997,7 +997,7 @@ class LightCNN():
         
 
     def train(self, train_gen, valid_gen=None, optimizer=SGD(lr=0.001, momentum=0.9, decay=0.00004, nesterov=True),
-              classifier_dropout=0.7, steps_per_epoch=3, validation_steps=50,
+              classifier_dropout=0.5, steps_per_epoch=3, validation_steps=50,
               epochs=1, out_dir='../out/', out_period=1, fix_extractor=False):      
         
         self.classifier().trainable = True
