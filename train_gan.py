@@ -43,13 +43,12 @@ if __name__ == '__main__':
     used_features_rate = 0.5  #("0.1 - 0.5" control the number of features)
     hidden_units = [64, 64]	#(indicating the number of hidden units in each layer)
 
-    print ('Time')
-    time111 = time.time()-time1
-    print (('Time', time111))
-    time_total.append (time111)
+print ('Time')
+time111 = time.time()-time1
+print (('Time', time111))
+time_total.append (time111)
 
-    if __name__ == '__main__':
-    
-    pool = multiprocessing.Pool()
-    pool.map(1, range(0,10000))
-    pool.close()
+if __name__ == '__main__':
+   pool = multiprocessing.Pool()
+   pool.map(1, range(0,10000))
+   pool.close()
